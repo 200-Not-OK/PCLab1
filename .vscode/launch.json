@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "cppdbg",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/${input:executableName}.exe",
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true,
+      "preLaunchTask": "C/C++: gcc.exe build active file"
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "executableName",
+      "description": "Enter the name of the executable to debug (e.g., pi)"
+    }
+  ]
+}
