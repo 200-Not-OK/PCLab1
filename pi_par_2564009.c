@@ -8,7 +8,7 @@ It uses the timer from the OpenMP runtime library
 #include <stdlib.h>
 #include <omp.h>
 
-#define NUM_THREADS 12
+// #define NUM_THREADS 12
 
 double compute_pi(double step);
 double compute_pi_1(double step);
@@ -29,6 +29,7 @@ int main (int argc, char **argv)
 	
 	iter=atoi(argv[1]);
 	step = 1.0/(double)num_steps;
+	int num_threads = omp_get_max_threads();
 	for(int i=0; i<iter; i++){
         /* Record the time for staring the computation of pi */
 		start_time = omp_get_wtime();
@@ -40,7 +41,7 @@ int main (int argc, char **argv)
 	}
 	double timeSerial = run_time/iter;
 	
-	printf("\nSequential: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,timeSerial,NUM_THREADS);
+	printf("\nSequential: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,timeSerial,num_threads);
 
 	//METHOD 1: Parallel
 
@@ -56,7 +57,7 @@ int main (int argc, char **argv)
 	}
 	double timeParallel1 = run_time/iter;
 	double speedup1 = timeSerial/timeParallel1;
-	printf("\nParallel with false sharing: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,NUM_THREADS);
+	printf("\nParallel with false sharing: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,num_threads);
 	printf("Speedup: %f\n", speedup1);
 
 	//METHOD 2: Parallel
@@ -73,7 +74,7 @@ int main (int argc, char **argv)
 	}
 	double timeParallel2 = run_time/iter;
 	double speedup2 = timeSerial/timeParallel2;
-	printf("\nParallel with race condition: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,NUM_THREADS);
+	printf("\nParallel with race condition: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,num_threads);
 	printf("Speedup: %f\n", speedup2);
 
 	//METHOD 3: Parallel
@@ -90,7 +91,7 @@ int main (int argc, char **argv)
 	}
 	double timeParallel3 = run_time/iter;
 	double speedup3 = timeSerial/timeParallel3;
-	printf("\nParallel with no race condition: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,NUM_THREADS);
+	printf("\nParallel with no race condition: pi with %ld steps is %f in %f seconds using %d threads\n",num_steps,pi,run_time/iter,num_threads);
 	printf("Speedup: %f\n", speedup3);
     return EXIT_SUCCESS; 
 }
@@ -112,8 +113,10 @@ double compute_pi(double step){
 
 double compute_pi_1(double step){
 	int nthreads;
-	double pi = 0.0, sum[NUM_THREADS];
-	omp_set_num_threads(NUM_THREADS);
+	double pi = 0.0;
+	int num_threads = omp_get_max_threads();
+    double *sum = (double *)malloc(num_threads * sizeof(double));
+	omp_set_num_threads(num_threads);
 	#pragma omp parallel
 	{
 		int i, id, total_threads;
@@ -134,7 +137,8 @@ double compute_pi_1(double step){
 }
 
 double compute_pi_2(double step){
-	omp_set_num_threads(NUM_THREADS);
+	int num_threads = omp_get_max_threads();
+	omp_set_num_threads(num_threads);
 	int total_threads, id;
 	double pi = 0.0, x, sum = 0.0;
 	#pragma omp parallel shared(sum)
@@ -152,7 +156,8 @@ double compute_pi_2(double step){
 }
 
 double compute_pi_3(double step){
-	omp_set_num_threads(NUM_THREADS);
+	int num_threads = omp_get_max_threads();
+	omp_set_num_threads(num_threads);
 	int i;
 	double pi = 0.0, x, sum = 0.0;
 
